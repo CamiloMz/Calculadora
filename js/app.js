@@ -106,6 +106,11 @@ var calculadora = (function(){
         if(esResultado){
           document.getElementById('display').innerHTML = '';
           esResultado = true;
+          if (valor.toString().length > 8){
+            document.getElementById('display').innerHTML = valor.toExponential(2);
+          }else{
+            document.getElementById('display').innerHTML = valor;
+          }
         }else {
           if(operacion == 'esSuma' ){
             resultado = resultado + valor;
