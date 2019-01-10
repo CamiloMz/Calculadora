@@ -6,6 +6,7 @@ var calculadora = (function(){
   var signo = document.getElementById('sign').addEventListener('click',insertarSigno);
   var contTeclas = teclas.length;
   var resultado = 0;
+  var memoria = 0;
   var esResultado = false;
   var operacion = '';
 
@@ -24,22 +25,24 @@ var calculadora = (function(){
     };
     //Mostrar números en pantalla
     var valor= document.getElementById('display').innerHTML;
-    var txt = valor+ this.id;
+    var txt = valor + this.id;
     var contTxt = txt.length;
     if(esResultado){
-      valor = '';
-      document.getElementById('display').innerHTML = '';
-      esResultado = false;
-    }
-    if(contTxt <= 8 && this.id.length == 1){
-      if(valor == 0){
-        if(valor == '0.'){
-          document.getElementById('display').innerHTML = (valor + this.id);
-        }else{
-          valor = document.getElementById('display').innerHTML = this.id;
+      if(this.id.length == 1){
+        document.getElementById('display').innerHTML = this.id;
+        esResultado = false;
+      }
+    }else{
+      if(contTxt <= 8 && this.id.length == 1){
+        if(valor == 0){
+          if(valor == '0.'){
+            document.getElementById('display').innerHTML = txt;
+          }else{
+            valor = document.getElementById('display').innerHTML = this.id;
+          }
+        }else if(valor != 0){
+          valor = document.getElementById('display').innerHTML = txt;
         }
-      }else if(valor != 0){
-        valor = document.getElementById('display').innerHTML = valor+ this.id;
       }
     }
     return true;
@@ -85,117 +88,101 @@ var calculadora = (function(){
 
 
   function operacionesMatematicas(){
-    var btnSuma = document.getElementById('mas').addEventListener('click',suma);
-    var btnResta = document.getElementById('menos').addEventListener('click',resta);
-    var btnMultiplicacion = document.getElementById('por').addEventListener('click',multiplicacion);
-    var btnDivision = document.getElementById('dividido').addEventListener('click',division);
+    var btnSuma = document.getElementById('mas').addEventListener('click',() => {operar('esSuma')});
+    var btnResta = document.getElementById('menos').addEventListener('click',() => {operar('esResta')});
+    var btnMultiplicacion = document.getElementById('por').addEventListener('click',() => {operar('esMultiplicacion')});
+    var btnDivision = document.getElementById('dividido').addEventListener('click',() => {operar('esDivision')});
     var btnIgual = document.getElementById('igual').addEventListener('click',igual);
 
-    function suma(){
-      var valor = parseInt(document.getElementById('display').innerHTML);
-      if(resultado == 0 || esResultado != true){
-        resultado = valor;
-        document.getElementById('display').innerHTML = '';
-        operacion = 'esSuma';
-      }else{
-        resultado = resultado + valor;
-        document.getElementById('display').innerHTML = resultado;
-        esResultado = true;
-        operacion = 'esSuma';
-        return resultado
-      }
-    };
-
-    function resta(){
-      var valor = parseInt(document.getElementById('display').innerHTML);
+    function operar(esOperador){
+      var valor = parseFloat(document.getElementById('display').innerHTML);
       if(resultado == 0){
         resultado = valor;
         document.getElementById('display').innerHTML = '';
-        operacion = 'esResta';
-      }else{
-        resultado = resultado - valor;
-        document.getElementById('display').innerHTML = resultado;
-        operacion = 'esResta';
-        esResultado = true;
-      }
-    };
-
-    function multiplicacion(){
-      var valor = parseInt(document.getElementById('display').innerHTML);
-      if(resultado == 0){
-        resultado = valor;
+      }else if(valor.toString() == "NaN"){
+        resultado = resultado;
         document.getElementById('display').innerHTML = '';
-        operacion = 'esMultiplicacion';
       }else{
-        resultado = resultado * valor;
-        document.getElementById('display').innerHTML = resultado;
-        esResultado = true;
-        operacion = 'esMultiplicacion';
+        if(esResultado){
+          document.getElementById('display').innerHTML = '';
+          esResultado = true;
+        }else {
+          if(operacion == 'esSuma' ){
+            resultado = resultado + valor;
+            esResultado = true;
+          }else if(operacion == 'esResta' ){
+            resultado = resultado - valor;
+            esResultado = true;
+          }else if(operacion == 'esMultiplicacion' ){
+            resultado = resultado * valor;
+            esResultado = true;
+          }else if(operacion == 'esDivision' ){
+            resultado = resultado / valor;
+            esResultado = true;
+          }else{
+            resultado = resultado + valor
+            esResultado = true;
+          }
+        }
+        if (resultado.toString().length > 8){
+          document.getElementById('display').innerHTML = resultado.toExponential(2);
+        }else{
+          document.getElementById('display').innerHTML = resultado;
+        }
       }
-    };
-
-    function division(){
-      var valor = parseInt(document.getElementById('display').innerHTML);
-      if(resultado == 0){
-        resultado = valor;
-        document.getElementById('display').innerHTML = '';
-        operacion = 'esDivision';
-      }else{
-        resultado = resultado / valor;
-        document.getElementById('display').innerHTML = resultado;
-        esResultado = true;
-        operacion = 'esDivision';
-      }
-    };
+      operacion = esOperador;
+      memoria = 0;
+    }
 
     function igual(){
-      var valor = parseInt(document.getElementById('display').innerHTML);
-      if(operacion == 'esSuma' ){
+      if (memoria > 0){
         if(esResultado){
-          document.getElementById('display').innerHTML = resultado;
-          esResultado = true;
-        }else{
-          resultado = resultado + valor;
-          document.getElementById('display').innerHTML = resultado;
-          esResultado = true;
-          operacion = '';
+          if(operacion == 'esSuma' ){
+              resultado = resultado + memoria;
+              operacion = 'esSuma';
+          }else if(operacion == 'esResta' ){
+              resultado = resultado - memoria;
+              operacion = 'esResta';
+          }else if(operacion == 'esMultiplicacion' ){
+              resultado = resultado * memoria;
+              operacion = 'esMultiplicacion';
+          }else if(operacion == 'esDivision' ){
+              resultado = resultado / memoria;
+              operacion = 'esDivision';
+          }
+          if (resultado.toString().length > 8){
+            document.getElementById('display').innerHTML = resultado.toExponential(2);
+          }else{
+            document.getElementById('display').innerHTML = resultado;
+          }
         }
-      }else if(operacion == 'esResta' ){
-        if(esResultado){
-          document.getElementById('display').innerHTML = resultado;
-          esResultado = true;
-        }else{
-          resultado = resultado - valor;
-          document.getElementById('display').innerHTML = resultado;
-          esResultado = true;
-          operacion = '';
+      }else{
+        var valor = parseFloat(document.getElementById('display').innerHTML);
+
+        if(operacion == 'esSuma' ){
+            resultado = resultado + valor;
+            operacion = 'esSuma';
+        }else if(operacion == 'esResta' ){
+            resultado = resultado - valor;
+            operacion = 'esResta';
+        }else if(operacion == 'esMultiplicacion' ){
+            resultado = resultado * valor;
+            operacion = 'esMultiplicacion';
+        }else if(operacion == 'esDivision' ){
+            resultado = resultado / valor;
+            operacion = 'esDivision';
         }
-      }else if(operacion == 'esMultiplicacion' ){
-        if(esResultado){
-          document.getElementById('display').innerHTML = resultado;
-          esResultado = true;
-        }else{
-          resultado = resultado * valor;
-          document.getElementById('display').innerHTML = resultado;
-          esResultado = true;
-          operacion = '';
-        }
-      }else if(operacion == 'esDivision' ){
-        if(esResultado){
-          document.getElementById('display').innerHTML = resultado;
-          esResultado = true;
-        }else{
-          resultado = resultado / valor;
-          document.getElementById('display').innerHTML = resultado;
-          esResultado = true;
-          operacion = '';
-        }
-      }else if(operacion == ''){
-        document.getElementById('display').innerHTML = resultado;
         esResultado = true;
+        if (resultado.toString().length > 8){
+          document.getElementById('display').innerHTML = resultado.toExponential(2);
+        }else{
+          document.getElementById('display').innerHTML = resultado;
+        }
+        memoria = valor;
       }
-    };
-  }
+      esResultado = true;
+    }
+  };
 
   eventTeclas();
   operacionesMatematicas();
